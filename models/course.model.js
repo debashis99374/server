@@ -1,27 +1,25 @@
 const mongoose=require("mongoose")
-const videoSchema=new mongoose.Schema({
-    name:{
-        type:String,
-        required:true,
-    },
-    duration:{
-        type:Number,
-        required:true
-    },
-    url:{
-        type:String,
-        required:true, 
-    }
-},{
-    timestamps:true
-})
+
 const courseSchema=new mongoose.Schema({
     title:{
         type:String,
         required:true
     },
     videos:{
-        type:[videoSchema],
+        type:[{
+            name:{
+                type:String,
+                required:true,
+            },
+            duration:{
+                type:Number,
+                required:true
+            },
+            url:{
+                type:String,
+                required:true, 
+            }
+        }],
         default:[]
     },
     description:{
