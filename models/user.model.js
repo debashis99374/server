@@ -44,7 +44,15 @@ lastName:{
     gender:{
         type:String
     },
+   
+   
+    bookmark: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: [],
+    }
 
+},{
+    timestamps:true
 })
 const UserForElearning=new mongoose.model("UserForElearning",userSchema)
 module.exports=UserForElearning; 

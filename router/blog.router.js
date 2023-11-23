@@ -13,4 +13,4 @@ blogRouter.post('/blogs/update-blog/:blogId',authVerify,updateBlog)
 blogRouter.delete('blogs//delete-blog/:blogId',authVerify,deleteBlog)
 //this route deletes a specific blog content by taking blogid as params and userId from req.user._id ,also non admins cant delete a blog
 
-module.exports=blogRouter
+module.exports=blogRouter 
