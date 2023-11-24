@@ -34,11 +34,11 @@ const createCourse=async(req,res)=>{
 const getAllCourses = async (req, res) => {
     try {
         const allCourses = await CourseForLearning.find({});
-        console.log('allCourses:', allCourses); // Add this line for debugging
+        
 
         if (!allCourses) {
             return res.status(400).json({ message: "there is no course " });
-        }
+        } 
 
         res.status(200).json({ message: "all courses are here", data: allCourses });
     } catch (err) {

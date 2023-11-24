@@ -1,4 +1,5 @@
 const UserForElearning = require("../models/user.model");
+const CourseForLearning=require("../models/course.model")
 const bcrypt=require("bcrypt")
 const jwt=require("jsonwebtoken")
 //password is ${userName}123 for just own remembring
@@ -46,7 +47,18 @@ const signIn=async(req,res)=>{
     }
 }
 //update user details------------------------------------------------------------------------------------------------------------------------
+const allUsers=async(req,res)=>{
+    try{
+        const allUserss=await UserForElearning.find({})
+        if(!allUserss){
+            res.status(400).json({message:"can't fetch user data"})
+        }
+        res.status(200).json({message:"all users fetched",data:allUserss})
 
+    }catch(err){
+        res.status(500).json({message:"server side error",err}) 
+    }
+}
 const updateUserDetails=async (req,res)=>{
     const userId=req.user._id
     const dataToBeUpdated=req.body
@@ -105,16 +117,35 @@ const toggleAdmin=async(req,res)=>{
     }
 
 }
-// add a course to bookmark
-const addBookmark=async(req,res)=>{
-    const dataToBeadd=req.body
+// fetch all bookmarks
+const fetchBookmarks=async(req,res)=>{
     const userId=req.user._id
     try{
         const foundUser=await UserForElearning.findById(userId)
         if(!foundUser){
             res.status(400).json({message:"user not found"})
         }
-        foundUser.bookmark.push(dataToBeadd)
+        res.status(200).json({message:`all bookmarks for user: ${foundUser.userName} fetched `,data:foundUser.bookmark})
+
+
+    }catch(err){
+        res.status(500).json({message:"server side error",err})  
+    }
+}
+// add a course to bookmark
+const addBookmark=async(req,res)=>{
+    const courseId=req.body
+    const userId=req.user._id
+    try{
+        const foundUser=await UserForElearning.findById(userId)
+        const foundCourse=await CourseForLearning.findById(courseId)
+        if(!foundUser){
+            res.status(400).json({message:"user not found"})
+        }
+        if(!foundCourse){
+            res.status(401).json({message:"course  not found"})
+        }
+        foundUser.bookmark.push(foundCourse)
         const updatedUser=await foundUser.save()
         res.status(200).json({message:"course added to bookmark",data:updatedUser})
 
@@ -124,22 +155,45 @@ const addBookmark=async(req,res)=>{
     }
 }
 //delete a course from bookmark
-const removeBookmark=async(req,res)=>{
-    const {_id}=req.body
-    const userId=req.user._id
-    try{
-        const foundUser=await UserForElearning.findById(userId)
-        if(!foundUser){
-            res.status(400).json({message:"user not found"})
+const removeBookmark = async (req, res) => {
+    const courseId = req.body; // Assuming your request body has a property named 'courseId'
+    const userId = req.user._id;
+
+    try {
+        // Find the user
+        const foundUser = await UserForElearning.findById(userId);
+
+        if (!foundUser) {
+            return res.status(404).json({ message: "User not found" });
         }
-       foundUser.bookmark= foundUser.bookmark.filter((el)=>el._id.toString()!==_id)
-        const updatedUser= await foundUser.save()
-        res.status(200).json({message:"course removed from bookmark",data:updatedUser})
 
-    }catch(err){
-        res.status(500).json({message:"server side error",err})
+        // Find the course
+        const foundCourse = await CourseForLearning.findById(courseId);
+
+        if (!foundCourse) {
+            return res.status(404).json({ message: "Course not found" });
+        }
+
+        // Check if the course is bookmarked by the user
+        const isBookmarked = foundUser.bookmarks.includes(courseId);
+
+        if (!isBookmarked) {
+            return res.status(400).json({ message: "Course is not bookmarked by the user" });
+        }
+
+        // Remove the bookmark
+        const updatedUser = await UserForElearning.findByIdAndUpdate(
+            userId,
+            { $pull: { bookmarks: courseId } },
+            { new: true }
+        );
+
+        res.status(200).json({ message: "Bookmark removed successfully", user: updatedUser });
+    } catch (err) {
+        res.status(500).json({ message: "Server-side error", err });
     }
-}
+};
 
 
-module.exports={registration,signIn,updateUserDetails,deleteProfile,toggleAdmin,addBookmark,removeBookmark}
+
+module.exports={registration,signIn,allUsers,updateUserDetails,deleteProfile,toggleAdmin,fetchBookmarks,addBookmark,removeBookmark}
